@@ -42,13 +42,6 @@ int parseCommandLine(int argc, char *argv[], Options &options){
         return -1;
     }
 
-    if(options.isServer){
-        if(options.ip.size() != 0){
-            std::cerr<<"you don't need to assign an ip for server\n";
-            std::cerr<<"asssign host ip defaultly\n";
-            return 1;
-        }
-    }
 
     if(options.isClient){
         if(options.ip.size() == 0){
