@@ -7,22 +7,13 @@
 #include <memory>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <time.h>
+#include <sys/time.h>
 
 #include <assert.h>
 
 #include "socketOp.h"
-
-struct Session{
-    int32_t num;
-    int32_t length;
-    Session(int32_t _num, int32_t _len):num(_num), length(_len){};
-    Session(){};
-}__attribute__((__packed__));
-
-struct Payload{
-    int32_t length;
-    char data[0];
-};
+#include "ttcp.h"
 
 int transmit(Options &options){
 
@@ -58,11 +49,13 @@ int transmit(Options &options){
         writeN(sockfd, payload, 4+options.length);
         readN(sockfd, &ackSession, sizeof(Session));
         assert(ackSession.length == options.length);
-        
+
     }
 
     close(sockfd);
 
+    std::cout<<"Client: Package Length is "<<options.length<<", ";
+    std::cout<<"sent "<<options.num<<" packages"<<std::endl;
     return 1;
 }
 
@@ -87,7 +80,7 @@ int receive(Options &options){
 
     listen(sock, 5);
 
-    socklen_t *len = (socklen_t*)malloc(sizeof(socklen_t));
+    socklen_t *len = (socklen_t*)::malloc(sizeof(socklen_t));
     *len = sizeof(struct sockaddr_in);
     int clientFd = accept(sock, (struct sockaddr*)serverAddr, len);
     if(clientFd < 0){
@@ -106,10 +99,18 @@ int receive(Options &options){
 
     Payload *payload = (Payload*)::malloc(4+taskSession->length);
     
+    timeval start, end;
+    gettimeofday(&start, NULL);
     for(int i = 0; i < options.num; ++i){
-        readN(clientFd, taskSession, sizeof(Session));
-        assert(taskSession->length == ackSesion->length);
+        int ret = readN(clientFd, payload, 4+options.length);
+        assert(ret == options.length+4);
+
+        ret = writeN(clientFd, ackSesion, sizeof(Session));
+        assert(ret == sizeof(Session));
     }
+    gettimeofday(&end, NULL);
+    double timeInMS = 1000*(end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec)/1000.0;
+    std::cout<<"send "<<options.num * options.length<<" bytes in "
 
 
 }

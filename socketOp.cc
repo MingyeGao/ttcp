@@ -8,7 +8,7 @@ int readN(int sockfd, void *buffer, int size){
     }
 
     if(totalNum == size){
-        return 1;
+        return totalNum;
     }
     else{
         return -1;
@@ -22,7 +22,7 @@ int writeN(int sockfd, void *buffer, int size){
     }
 
     if(totalNum == size){
-        return 1;
+        return totalNum;
     }
     else{
         return -1;
