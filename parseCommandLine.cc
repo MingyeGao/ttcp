@@ -37,7 +37,7 @@ int parseCommandLine(int argc, char *argv[], Options &options){
         return -1;
     }
 
-    if(options.isClient && options.isServer){
+    if(options.isClient == options.isServer){
         std::cerr<<"the program should either be a client or a server\n";
         return -1;
     }

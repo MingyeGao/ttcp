@@ -33,20 +33,31 @@ int transmit(Options &options){
         return -1;
     }
 
-    Session taskSession(options.num, options.length);
-    Session ackSession;
-    writeN(sockfd, &taskSession, sizeof(Session));
-    readN(sockfd, &ackSession, sizeof(Session));
+    std::cout<<"connected\n";
 
-    assert(taskSession.length == ackSession.length && taskSession.num == ackSession.num);
+    Session *taskSession = new Session(options.num, options.length);
+    Session ackSession;
+    int ret = writeN(sockfd, taskSession, sizeof(Session));
+    if(ret != sizeof(Session)){
+        perror("write task session failed");
+        std::cerr<<"ret = "<<ret<<"\n";
+    }
+    std::cout<<"sent task session "<<ret<<" bytes\n";
+    readN(sockfd, &ackSession, sizeof(Session));
+    std::cout<<"recved ack session\n";
+
+    assert(taskSession->length == ackSession.length && taskSession->num == ackSession.num);
+    //std::cout<<"ack recved\n";
 
     Payload *payload = (Payload*)::malloc(4+options.length);
     for(int i = 0; i < options.length; ++i){
         payload->data[i] = "0123456789abcdefghijklmnopqrstuvwxyz"[i%36];
     }
 
+    int count = 0;
     for(int i = 0; i < options.num; ++i){
         writeN(sockfd, payload, 4+options.length);
+        std::cout<<"send "<<++count<<" frames\n";
         readN(sockfd, &ackSession, sizeof(Session));
         assert(ackSession.length == options.length);
 
@@ -87,11 +98,12 @@ int receive(Options &options){
         perror("accept");
         exit(1);
     }
-
+    std::cout<<"fd accepted\n";
     
     Session *taskSession = new Session();
 
-    readN(clientFd, taskSession, sizeof(Session));
+    int ret = readN(clientFd, taskSession, sizeof(Session));
+    std::cout<<"read "<<ret<<" bytes\n";
 
     Session *ackSesion = new Session(taskSession->num, taskSession->length);
 
@@ -110,7 +122,7 @@ int receive(Options &options){
     }
     gettimeofday(&end, NULL);
     double timeInMS = 1000*(end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec)/1000.0;
-    std::cout<<"send "<<options.num * options.length<<" bytes in "
+    std::cout<<"send "<<options.num * options.length<<" bytes in "<<timeInMS<<" ms";
 
 
 }
