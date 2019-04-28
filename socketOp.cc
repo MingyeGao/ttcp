@@ -4,7 +4,7 @@
 
 int readN(int sockfd, void *buffer, int size){
     int readNum = 0, totalNum = 0;
-    while((readNum = read(sockfd, reinterpret_cast<void*>(reinterpret_cast<size_t>(buffer)+totalNum), size)) > 0){
+    while((readNum = read(sockfd, buffer+totalNum, size-totalNum)) > 0){
         totalNum += readNum;
     }
     
@@ -25,7 +25,6 @@ int writeN(int sockfd, void *buffer, int size){
 
 
     if(totalNum == size){
-        printf("totalNum  is %d\n", totalNum);
         return totalNum;
     }
     else{

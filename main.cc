@@ -18,6 +18,8 @@ int main(int argc, char *argv[]){
     parseCommandLine(argc, argv, options);
 
     if(options.isClient){
+        std::cout<<"options.num = "<<options.num<<"\n";
+        std::cout<<"options.length = "<<options.length<<"\n";
         transmit(options);
     }
     else if(options.isServer){

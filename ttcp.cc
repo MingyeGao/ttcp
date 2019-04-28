@@ -103,7 +103,7 @@ int receive(Options &options){
     Session *taskSession = new Session();
 
     int ret = readN(clientFd, taskSession, sizeof(Session));
-    std::cout<<"read "<<ret<<" bytes\n";
+    //std::cout<<"read "<<ret<<" bytes\n";
 
     Session *ackSesion = new Session(taskSession->num, taskSession->length);
 
@@ -113,16 +113,19 @@ int receive(Options &options){
     
     timeval start, end;
     gettimeofday(&start, NULL);
-    for(int i = 0; i < options.num; ++i){
-        int ret = readN(clientFd, payload, 4+options.length);
-        assert(ret == options.length+4);
+    for(int i = 0; i < taskSession->num; ++i){
+        int ret = readN(clientFd, payload, 4+taskSession->length);
+        assert(ret == taskSession->length+4);
 
         ret = writeN(clientFd, ackSesion, sizeof(Session));
         assert(ret == sizeof(Session));
     }
     gettimeofday(&end, NULL);
     double timeInMS = 1000*(end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec)/1000.0;
-    std::cout<<"send "<<options.num * options.length<<" bytes in "<<timeInMS<<" ms";
+    
+    long sendByteNum = taskSession->num * taskSession->length;
+    std::cout<<"send "<<sendByteNum<<" bytes in "<<timeInMS<<" ms";
+    std::cout<<"rate is "<<(sendByteNum*1000)/(timeInMS*1024*1024)<<"MB/s\n";
 
 
 }
