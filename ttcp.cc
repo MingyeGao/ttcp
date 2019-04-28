@@ -42,12 +42,10 @@ int transmit(Options &options){
         perror("write task session failed");
         std::cerr<<"ret = "<<ret<<"\n";
     }
-    std::cout<<"sent task session "<<ret<<" bytes\n";
     readN(sockfd, &ackSession, sizeof(Session));
     std::cout<<"recved ack session\n";
 
     assert(taskSession->length == ackSession.length && taskSession->num == ackSession.num);
-    //std::cout<<"ack recved\n";
 
     Payload *payload = (Payload*)::malloc(4+options.length);
     for(int i = 0; i < options.length; ++i){
@@ -57,7 +55,6 @@ int transmit(Options &options){
     int count = 0;
     for(int i = 0; i < options.num; ++i){
         writeN(sockfd, payload, 4+options.length);
-        std::cout<<"send "<<++count<<" frames\n";
         readN(sockfd, &ackSession, sizeof(Session));
         assert(ackSession.length == options.length);
 
@@ -98,12 +95,10 @@ int receive(Options &options){
         perror("accept");
         exit(1);
     }
-    std::cout<<"fd accepted\n";
     
     Session *taskSession = new Session();
 
     int ret = readN(clientFd, taskSession, sizeof(Session));
-    //std::cout<<"read "<<ret<<" bytes\n";
 
     Session *ackSesion = new Session(taskSession->num, taskSession->length);
 
@@ -124,7 +119,8 @@ int receive(Options &options){
     double timeInMS = 1000*(end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec)/1000.0;
     
     long sendByteNum = taskSession->num * taskSession->length;
-    std::cout<<"send "<<sendByteNum<<" bytes in "<<timeInMS<<" ms";
+    double sendByteNumInMB = (double)sendByteNum/(1024*1024);
+    std::cout<<"recved "<<sendByteNumInMB<<" MB in "<<timeInMS<<" ms\n";
     std::cout<<"rate is "<<(sendByteNum*1000)/(timeInMS*1024*1024)<<"MB/s\n";
 
 
